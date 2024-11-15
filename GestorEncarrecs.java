@@ -218,38 +218,21 @@ public class GestorEncarrecs {
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
+            XMLReader procesadorXML = saxParser.getXMLReader();
+            GestorSax handler;
 
-            GestorSax handler = new GestorSax() {
-                boolean isClient = false;
-                String currentClient = "";
+            if (clientNom != null && !(clientNom.isEmpty())) {
+                handler = new GestorSax(clientNom);
+            } else {
+                handler = new GestorSax();
+            }
+            procesadorXML.setContentHandler(handler);
 
-                @Override
-                public void startElement(String uri, String localName, String qName, Attributes attributes) {
-                    if (qName.equalsIgnoreCase("client")) {
-                        isClient = true;
-                    }
-                }
-
-                @Override
-                public void characters(char[] ch, int start, int length) {
-                    if (isClient) {
-                        currentClient = new String(ch, start, length);
-                        isClient = false;
-                    }
-                }
-
-                @Override
-                public void endElement(String uri, String localName, String qName) {
-                    if (qName.equalsIgnoreCase("client") && currentClient.equalsIgnoreCase(clientNom)) {
-                        System.out.println("Encàrrec trobat per al client: " + clientNom);
-                    }
-                }
-            };
-
-            saxParser.parse(new File(filename), handler);
+            InputSource xmlFile = new InputSource(filename);
+            procesadorXML.parse(xmlFile);
 
         } catch (Exception e) {
-            System.err.println("Error al llegir XML amb SAX: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
