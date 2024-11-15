@@ -1,0 +1,34 @@
+<encarrecs>
+    <encarrec id="1">
+        <client>Juan Perez</client>
+        <telefon>123456789</telefon>
+        <dataEncàrrec>12/11/2024</dataEncàrrec>
+        <articles>
+            <article>
+                <nom>Portátil HP</nom>
+                <quantitat>1</quantitat>
+                <tipusUnitat>u</tipusUnitat>
+                <preu>500.0</preu>
+            </article>
+            <article>
+                <nom>Ratón Logitech</nom>
+                <quantitat>2</quantitat>
+                <tipusUnitat>u</tipusUnitat>
+                <preu>25.0</preu>
+            </article>
+        </articles>
+    </encarrec>
+    <encarrec id="2">
+        <client>Ana López</client>
+        <telefon>987654321</telefon>
+        <dataEncàrrec>13/11/2024</dataEncàrrec>
+        <articles>
+            <article>
+                <nom>Monitor Samsung</nom>
+                <quantitat>1</quantitat>
+                <tipusUnitat>u</tipusUnitat>
+                <preu>150.0</preu>
+            </article>
+        </articles>
+    </encarrec>
+</encarrecs>
