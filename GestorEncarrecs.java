@@ -183,7 +183,7 @@ public class GestorEncarrecs {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
 
-            DefaultHandler handler = new DefaultHandler() {
+            GestorSax handler = new GestorSax() {
                 boolean isClient = false;
                 String currentClient = "";
 
