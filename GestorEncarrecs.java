@@ -158,20 +158,56 @@ public class GestorEncarrecs {
 
     public static void llegirXMLDOM(String filename) {
         try {
+            // Configuración del parser DOM
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(new File(filename));
 
-            NodeList encarrecs = doc.getElementsByTagName("encarrec");
+            // Normalizar el documento XML
+            doc.getDocumentElement().normalize();
 
-            for (int i = 0; i < encarrecs.getLength(); i++) {
-                Element encElement = (Element) encarrecs.item(i);
-                String id = encElement.getAttribute("id");
-                String client = encElement.getElementsByTagName("client").item(0).getTextContent();
-                String telefon = encElement.getElementsByTagName("telefon").item(0).getTextContent();
-                String data = encElement.getElementsByTagName("dataEncàrrec").item(0).getTextContent();
+            // Obtener todos los elementos "encarrec"
+            NodeList encarrecsList = doc.getElementsByTagName("encarrec");
 
-                System.out.println("ID: " + id + ", Client: " + client + ", Telèfon: " + telefon + ", Data: " + data);
+            // Recorrer cada encargo y mostrar los datos
+            for (int i = 0; i < encarrecsList.getLength(); i++) {
+                Node node = encarrecsList.item(i);
+
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element encElement = (Element) node;
+
+                    String id = encElement.getAttribute("id");
+                    String client = encElement.getElementsByTagName("client").item(0).getTextContent();
+                    String telefon = encElement.getElementsByTagName("telefon").item(0).getTextContent();
+                    String dataEncàrrec = encElement.getElementsByTagName("dataEncàrrec").item(0).getTextContent();
+
+                    // Mostrar los datos básicos del encargo
+                    System.out.println("Encàrrec ID: " + id);
+                    System.out.println("Client: " + client);
+                    System.out.println("Telèfon: " + telefon);
+                    System.out.println("Data Encàrrec: " + dataEncàrrec);
+
+                    // Leer los artículos
+                    NodeList articlesList = encElement.getElementsByTagName("article");
+                    for (int j = 0; j < articlesList.getLength(); j++) {
+                        Node articleNode = articlesList.item(j);
+                        if (articleNode.getNodeType() == Node.ELEMENT_NODE) {
+                            Element articleElement = (Element) articleNode;
+
+                            String articleName = articleElement.getElementsByTagName("nom").item(0).getTextContent();
+                            String quantity = articleElement.getElementsByTagName("quantitat").item(0).getTextContent();
+                            String unitType = articleElement.getElementsByTagName("tipusUnitat").item(0).getTextContent();
+                            String price = articleElement.getElementsByTagName("preu").item(0).getTextContent();
+
+                            // Mostrar los datos de cada artículo
+                            System.out.println("  Article: " + articleName);
+                            System.out.println("  Quantitat: " + quantity);
+                            System.out.println("  Tipus Unit: " + unitType);
+                            System.out.println("  Preu: " + price);
+                        }
+                    }
+                    System.out.println("-------------------------");
+                }
             }
         } catch (Exception e) {
             System.err.println("Error al llegir XML amb DOM: " + e.getMessage());
