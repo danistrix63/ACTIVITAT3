@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -61,10 +62,44 @@ public class Main {
                         break;
 
                     case "4":
-                        String xmlFilename = "encarrecs_" + System.currentTimeMillis() + ".xml";
-                        GestorEncarrecs.generarXMLDOM(encarrecs, xmlFilename);
-                        System.out.println("XML generat: " + xmlFilename);
-                        break;
+                        try {
+                            File file;
+                    
+                            while (true) {
+                                System.out.println("Introdueix el nom del fitxer .dat per generar l'XML:");
+                                filename = reader.readLine().trim(); // Leer y limpiar la entrada
+                    
+                                if (filename.isEmpty()) {
+                                    System.out.println("El nom del fitxer no pot estar buit. Torna a intentar-ho.");
+                                    continue; // Vuelve al inicio del bucle
+                                }
+                    
+                                file = new File(filename);
+                                if (file.exists() && file.isFile()) { // Comprueba si existe y es un archivo
+                                    break; // Sale del bucle si todo está bien
+                                } else {
+                                    System.out.println("Error, no existeix el fitxer: " + filename);
+                                }
+                            }
+                    
+                            // Paso 1: Cargar los encarrecs desde el archivo .dat
+                            encarrecs = GestorEncarrecs.cargarEncàrrecs(file.getAbsolutePath());
+                    
+                            // Paso 2: Validar que la lista no esté vacía
+                            if (encarrecs == null || encarrecs.isEmpty()) {
+                                System.out.println("El fitxer no conté cap encàrrec o no es vàlid.");
+                                break; // Salir del caso si no hay datos
+                            }
+                    
+                            // Paso 3: Generar el XML
+                            String xmlFilename = "encarrecs_" + System.currentTimeMillis() + ".xml";
+                            GestorEncarrecs.generarXMLDOM(encarrecs, xmlFilename);
+                            System.out.println("XML generat: " + xmlFilename);
+                    
+                        } catch (IOException e) {
+                            System.err.println("Error al llegir el nom del fitxer: " + e.getMessage());
+                        }
+                        break; // Agregar break para evitar flujo no deseado 
 
                     case "5":
                         System.out.print("Introdueix el nom del fitxer XML a llegir: ");

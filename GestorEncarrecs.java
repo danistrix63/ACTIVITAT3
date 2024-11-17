@@ -1,14 +1,16 @@
-import org.w3c.dom.*;
+import java.io.*;
+import java.text.Normalizer;
+import java.util.ArrayList;
 import javax.xml.parsers.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import java.io.*;
-import java.util.ArrayList;
+import org.w3c.dom.*;
 import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
 
 public class GestorEncarrecs {
      // Método para escribir la lista de encàrrecs en un archivo serializable
@@ -116,45 +118,63 @@ public class GestorEncarrecs {
     }
 
     public static void generarXMLDOM(ArrayList<Encarrec> encarrecs, String filename) {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.newDocument();
+            DOMImplementation implementation = builder.getDOMImplementation();
+            Document document = implementation.createDocument(null, "encarrecs", null);
+            document.setXmlVersion("1.0");
 
-            Element root = doc.createElement("encarrecs");
-            doc.appendChild(root);
-
+            
             for (Encarrec enc : encarrecs) {
-                Element encElement = doc.createElement("encarrec");
-                encElement.setAttribute("id", String.valueOf(enc.getId()));
+                Element arrel = document.createElement("encarrec");
+                arrel.setAttribute("id", Integer.toString(enc.getId()));
+                document.getDocumentElement().appendChild(arrel);
 
-                Element client = doc.createElement("client");
-                client.appendChild(doc.createTextNode(enc.getNomClient()));
-                encElement.appendChild(client);
+                CrearElement("nomClient", enc.getNomClient(), arrel, document);
+                CrearElement("telefon", enc.getTelefon(), arrel, document);
+                String valorNormalizado = Normalizer.normalize(enc.getDataEncàrrec(), Normalizer.Form.NFC);
+                CrearElement("dataEncàrrec", valorNormalizado, arrel, document);
 
-                Element telefon = doc.createElement("telefon");
-                telefon.appendChild(doc.createTextNode(enc.getTelefon()));
-                encElement.appendChild(telefon);
-
-                Element data = doc.createElement("dataEncàrrec");
-                data.appendChild(doc.createTextNode(enc.getDataEncàrrec()));
-                encElement.appendChild(data);
-
-                root.appendChild(encElement);
+                // Crear elementos para artículos
+                Element articlesElement = document.createElement("articles");
+                for (Article article : enc.getArticles()) {
+                    Element articleElement = document.createElement("article");
+                    
+                    CrearElement("nom", article.getNom(), articleElement, document);
+                    CrearElement("quantitat", Float.toString(article.getQuantitat()), articleElement, document);
+                    CrearElement("tipusUnitat", article.getTipusUnitat(), articleElement, document);
+                    CrearElement("preu", Float.toString(article.getPreu()), articleElement, document);
+                    
+                    articlesElement.appendChild(articleElement);
+                }
+                arrel.appendChild(articlesElement);
+                
+                CrearElement("preuTotal", Float.toString(enc.getPreuTotal()), arrel, document);
             }
 
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File(filename));
-
+            // Configuración para la transformación a XML y guardado en archivo
+            Source source = new DOMSource(document);
+            Result result = new StreamResult(new FileWriter(filename));
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            transformer.setOutputProperty("{http://xml.apache.org/xalan}indent-amount", "5");
             transformer.transform(source, result);
-            System.out.println("XML generat correctament.");
 
         } catch (Exception e) {
-            System.err.println("Error al generar XML: " + e.getMessage());
+            System.err.println("Error: " + e);
         }
     }
+
+    // Método para crear elementos XML y añadirlos al documento
+    public static void CrearElement(String dadaEncarrec, String valor, Element arrel, Document document) {
+        Element elem = document.createElement(dadaEncarrec);
+        Text text = document.createTextNode(valor);
+        arrel.appendChild(elem);
+        elem.appendChild(text);
+    }
+
 
     public static void llegirXMLDOM(String filename) {
         try {
@@ -177,7 +197,7 @@ public class GestorEncarrecs {
                     Element encElement = (Element) node;
 
                     String id = encElement.getAttribute("id");
-                    String client = encElement.getElementsByTagName("client").item(0).getTextContent();
+                    String client = encElement.getElementsByTagName("nomClient").item(0).getTextContent();
                     String telefon = encElement.getElementsByTagName("telefon").item(0).getTextContent();
                     String dataEncàrrec = encElement.getElementsByTagName("dataEncàrrec").item(0).getTextContent();
 
